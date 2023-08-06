@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "pyllama"
+version = "0.1.0"
+description = "Self hosted API for Llama 2 using Streamlist"
+authors = ["Mitch Murphy Murphy <mitch.murphy@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+langchain = "^0.0.253"
+openai = "^0.27.8"
+python-dotenv = "^1.0.0"
+streamlit = "^1.25.0"
+llama-cpp-python = "^0.1.77"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
