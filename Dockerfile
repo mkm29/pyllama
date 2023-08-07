@@ -55,5 +55,10 @@ COPY --from=builder-base $VENV_PATH $VENV_PATH
 COPY ./src /src
 WORKDIR /
 EXPOSE 8501
-ENTRYPOINT [ "streamlit" ]
-CMD [ "run", "src/app.py"]
+# for streamlist app
+# ENTRYPOINT [ "streamlit" ]
+# CMD [ "run", "src/app.py"]
+
+# for fastapi app
+ENTRYPOINT [ "uvicorn" ]
+CMD [ "src.app:app",  "--host", "0.0.0.0", "--workers", "4", "--port", "8501"]
