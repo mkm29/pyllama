@@ -1,5 +1,5 @@
 from typing import Union, List
-import threading
+import re
 from config import LlmConfig
 from red_pandas import RedPandas
 from llm import get_model
@@ -7,6 +7,8 @@ from utils import clean_strings
 
 from langchain.llms import LlamaCpp
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+REGEX = re.compile(r"\d+\.")
 
 config: LlmConfig = None
 # create buffer to hold new tokens
@@ -29,6 +31,11 @@ def new_token(token: str, topic: str, **kwargs) -> None:
     """Run when a new token is generated."""
     # print(f'new_token: {token}')
     # add token to buffer
+
+    # does token match REGEX
+    if REGEX.match(token):
+        return
+
     buffer.append(token)
     # test if token is a punctuation mark
     if token in [".", "!", "?"]:

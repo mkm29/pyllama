@@ -82,13 +82,15 @@ class RedPandas:
         except Exception as e:
             return f"Topic {topic_name} already exists"
 
+
     def send_message(self, message: bytes, topic: str) -> None:
         """Sends a message to a topic"""
 
         if self.producer is None:
             raise Exception("Producer not initialized")
-        if message is None:
+        if message == b'':
             return
+
         # mb = bytes(message, "utf-8")
         # if len(mb) < 2:
         #     return
