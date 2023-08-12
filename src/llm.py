@@ -25,5 +25,5 @@ def get_model(config: LlmConfig, handlers: List[Any]) -> LlamaCpp:
         callback_manager=CallbackManager(handlers),
         streaming=config.streaming,
         verbose=config.verbose,
-        echo=False,
+        echo=True,
     )

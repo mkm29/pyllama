@@ -3,6 +3,7 @@ import threading
 from config import LlmConfig
 from red_pandas import RedPandas
 from llm import get_model
+from utils import clean_strings
 
 from langchain.llms import LlamaCpp
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -21,22 +22,24 @@ def llm_start(serializers, prompts, **kwags) -> None:
     print(f"llm_start: {kwags}")
     # reinitialize buffer
     buffer.clear()
+    red_pandas.producer.flush()
 
 
 def new_token(token: str, topic: str, **kwargs) -> None:
     """Run when a new token is generated."""
-    # print(f'new_token: {kwargs}')
+    # print(f'new_token: {token}')
     # add token to buffer
     buffer.append(token)
-    # if the buffer contains a newline, send it to red pandas
-    if "\n" in buffer:
-        # send buffer to red pandas
-        thread = threading.Thread(
-            target=red_pandas.send_message, args=("".join(buffer), topic)
-        )
-        thread.start()
+    # test if token is a punctuation mark
+    if token in [".", "!", "?"]:
+        # if it is, add a newline to the buffer
         # clear buffer
+        # send buffer to red pandas
+        msg = clean_strings(buffer)
+        print("Sening message: ", msg)
+        # push to red pandas on a new thread
         buffer.clear()
+        red_pandas.send_message(msg, topic)
 
 
 def done(response, **kwargs):
@@ -45,13 +48,11 @@ def done(response, **kwargs):
     # send buffer to red pandas
     # push remaining buffer to red pandas
     if len(buffer) > 0:
-        msg = "".join(buffer)
+        msg = clean_strings(buffer)
         # push to red pandas on a new thread
-        thread = threading.Thread(
-            target=red_pandas.send_message, args=(msg, config.topic_name)
-        )
-        thread.start()
         buffer.clear()
+        print("Sening message: ", msg)
+        red_pandas.send_message(msg, config.topic_name)
 
 
 handler.on_llm_start = llm_start
@@ -74,4 +75,9 @@ def init() -> Union[LlmConfig, RedPandas, LlamaCpp]:
 if __name__ == "__main__":
     config, red_pandas, model = init()
     print("PyLlama initialized")
-    model("When was the last time that the Toronto Maples Leafs won the Stanley Cup?")
+    promts = [
+        "What is the meaning of life?",
+        "What is the best programming language?",
+        "When was the last time that the Toronto Maples Leafs won the Stanley Cup?"
+    ]
+    model(promts[0])

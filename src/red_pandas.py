@@ -82,22 +82,21 @@ class RedPandas:
         except Exception as e:
             return f"Topic {topic_name} already exists"
 
-    def send_message(self, message: str, topic: str) -> None:
+    def send_message(self, message: bytes, topic: str) -> None:
         """Sends a message to a topic"""
 
         if self.producer is None:
             raise Exception("Producer not initialized")
-        if message is None or message == "":
+        if message is None:
             return
-        print(f"Sending message to topic {topic}, message: {message}")
-        mb = bytes(message, "utf-8")
-        res: FutureRecordMetadata = self.producer.send(topic, mb)
-        # callback
-        res.add_callback(
-            lambda x: print(
-                f"[CB]: Message sent to topic {topic}, message: {message}, result: {x}"
-            )
-        )
+        # mb = bytes(message, "utf-8")
+        # if len(mb) < 2:
+        #     return
+        # if mb is empty
+
+        res: FutureRecordMetadata = self.producer.send(topic, value=message)
+        # flush
+        self.producer.flush()
         # print(f"Message sent to topic {topic}, message: {message}, result: {res}")
 
     def consume_messages(self, topic: str) -> str:
