@@ -2,6 +2,8 @@ from typing import Optional, List
 
 def clean_strings(strings: List[str]) -> Optional[bytes]:
     s: str = "".join(strings)
+    replace: List[str] = ["\n", "\r", "\t", "*"]
     if s is None:
         return None
-    return bytes(s.replace("\n", "").replace("\r", "").replace("\t", "").strip(), "utf-8")
+    s = [s.replace(r, "") for r in replace]
+    return bytes(s.strip(), "utf-8")

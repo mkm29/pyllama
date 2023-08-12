@@ -1,5 +1,6 @@
 from typing import Union, List
 import re
+import threading
 from config import LlmConfig
 from red_pandas import RedPandas
 from llm import get_model
@@ -43,10 +44,11 @@ def new_token(token: str, topic: str, **kwargs) -> None:
         # clear buffer
         # send buffer to red pandas
         msg = clean_strings(buffer)
-        print("Sening message: ", msg)
         # push to red pandas on a new thread
         buffer.clear()
-        red_pandas.send_message(msg, topic)
+        thread = threading.Thread(target=red_pandas.send_message, args=(msg, topic))
+        thread.start()
+        # red_pandas.send_message(msg, topic)
 
 
 def done(response, **kwargs):
@@ -58,8 +60,8 @@ def done(response, **kwargs):
         msg = clean_strings(buffer)
         # push to red pandas on a new thread
         buffer.clear()
-        print("Sening message: ", msg)
-        red_pandas.send_message(msg, config.topic_name)
+        thread = threading.Thread(target=red_pandas.send_message, args=(msg, config.topic_name))
+        thread.start()
 
 
 handler.on_llm_start = llm_start
@@ -72,7 +74,7 @@ handler.on_llm_error = lambda error, **kwargs: print("on_llm_error")
 
 def init() -> Union[LlmConfig, RedPandas, LlamaCpp]:
     config = LlmConfig()
-    config.topic_name = "llama7-1"
+    config.topic_name = "llama7-2"
     red_pandas = RedPandas(config)
 
     model = get_model(config, [handler])
@@ -87,4 +89,4 @@ if __name__ == "__main__":
         "What is the best programming language?",
         "When was the last time that the Toronto Maples Leafs won the Stanley Cup?"
     ]
-    model(promts[0])
+    model(promts[1])

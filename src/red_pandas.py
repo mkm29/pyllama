@@ -1,9 +1,8 @@
 from typing import Optional
+import re
 
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.admin import KafkaAdminClient, NewTopic
-
-# import FutureRecordMetadata
 from kafka.producer.future import FutureRecordMetadata
 
 from config import LlmConfig
@@ -89,6 +88,9 @@ class RedPandas:
         if self.producer is None:
             raise Exception("Producer not initialized")
         if message == b'':
+            return
+        regex = re.compile(r'\d+\.')
+        if regex.match(message.decode("utf-8")):
             return
 
         # mb = bytes(message, "utf-8")
