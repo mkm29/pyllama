@@ -25,6 +25,12 @@ def new_token(token: str, **kwargs) -> None:
     # print(f'new_token: {kwargs}')
     # add token to buffer
     buffer.append(token)
+    # if the buffer contains a newline, send it to red pandas
+    if '\n' in buffer:
+        # send buffer to red pandas
+        red_pandas.send_message(''.join(buffer), 'llm')
+        # clear buffer
+        buffer.clear()
 
 def done(response, **kwargs):
     """Run when LLM is done running."""
@@ -41,7 +47,7 @@ handler.on_llm_error = lambda error, **kwargs: print('on_llm_error')
 
 def init() -> Union[LlmConfig, RedPandas, LlamaCpp]:
     config = LlmConfig()
-    red_pandas = RedPandas(config)
+    red_pandas = RedPandas(config, 'llama7-1')
     model = get_model(config, [handler])
     return config, red_pandas, model
 
