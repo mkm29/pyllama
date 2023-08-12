@@ -2,7 +2,12 @@ from typing import Optional
 
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.admin import KafkaAdminClient, NewTopic
+
+# import FutureRecordMetadata
+from kafka.producer.future import FutureRecordMetadata
+
 from config import LlmConfig
+
 
 class RedPandas:
     """RedPandas class"""
@@ -11,7 +16,6 @@ class RedPandas:
     @property
     def bootstrap_servers(self) -> list:
         return self._bootstrap_servers
-
 
     @bootstrap_servers.setter
     def bootstrap_servers(self, bootstrap_servers: list) -> None:
@@ -24,7 +28,7 @@ class RedPandas:
     @admin_client.setter
     def admin_client(self, admin_client: KafkaAdminClient) -> None:
         self._admin_client = admin_client
-    
+
     @property
     def producer(self) -> KafkaProducer:
         return self._producer
@@ -33,7 +37,7 @@ class RedPandas:
     def producer(self, producer: KafkaProducer) -> None:
         self._producer = producer
 
-    @property    
+    @property
     def consumer(self) -> KafkaConsumer:
         return self._consumer
 
@@ -41,13 +45,15 @@ class RedPandas:
     def consumer(self, consumer: KafkaConsumer) -> None:
         self._consumer = consumer
 
-
-    def __init__(self, config: LlmConfig, topic: Optional[str]) -> None:
-        self.bootstrap_servers = [f"{server}:{config.broker_port}" for server in config.bootstrap_servers]
+    def __init__(self, config: LlmConfig, topic: Optional[str] = None) -> None:
+        self.bootstrap_servers = [
+            f"{server}:{config.broker_port}" for server in config.bootstrap_servers
+        ]
 
         try:
             self.admin_client = KafkaAdminClient(
-                bootstrap_servers=self.bootstrap_servers)
+                bootstrap_servers=self.bootstrap_servers
+            )
         except Exception as e:
             raise
         try:
@@ -58,7 +64,7 @@ class RedPandas:
             self.consumer = KafkaConsumer(bootstrap_servers=self.bootstrap_servers)
         except Exception as e:
             raise
-        if topic:
+        if config.topic_name:
             self.create_topic(topic)
 
     def create_topic(self, topic_name: str) -> str:
@@ -70,7 +76,8 @@ class RedPandas:
             return f"Topic {topic_name} already exists"
         try:
             self.admin_client.create_topics(
-                [NewTopic(name=topic_name, num_partitions=1, replication_factor=1)])
+                [NewTopic(name=topic_name, num_partitions=1, replication_factor=1)]
+            )
             return f"Topic {topic_name} created"
         except Exception as e:
             return f"Topic {topic_name} already exists"
@@ -80,7 +87,18 @@ class RedPandas:
 
         if self.producer is None:
             raise Exception("Producer not initialized")
-        self.producer.send(topic, message.encode("utf-8"))
+        if message is None or message == "":
+            return
+        print(f"Sending message to topic {topic}, message: {message}")
+        mb = bytes(message, "utf-8")
+        res: FutureRecordMetadata = self.producer.send(topic, mb)
+        # callback
+        res.add_callback(
+            lambda x: print(
+                f"[CB]: Message sent to topic {topic}, message: {message}, result: {x}"
+            )
+        )
+        # print(f"Message sent to topic {topic}, message: {message}, result: {res}")
 
     def consume_messages(self, topic: str) -> str:
         """Consumes a message from a topic"""

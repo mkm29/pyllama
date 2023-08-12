@@ -3,12 +3,15 @@ from typing import Any, Dict, List
 from config import LlmConfig
 
 from langchain.callbacks.manager import CallbackManager
+
 # from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler, AsyncCallbackHandler
 from langchain.llms import LlamaCpp
+
 # from langchain.schema import AgentAction, AgentFinish, BaseMessage, LLMResult
 
 # handler = StreamingStdOutCallbackHandler()
 # async_handler = AsyncCallbackHandler()
+
 
 def get_model(config: LlmConfig, handlers: List[Any]) -> LlamaCpp:
     """Get the LLM model."""
@@ -22,5 +25,5 @@ def get_model(config: LlmConfig, handlers: List[Any]) -> LlamaCpp:
         callback_manager=CallbackManager(handlers),
         streaming=config.streaming,
         verbose=config.verbose,
-        echo=False
+        echo=False,
     )
