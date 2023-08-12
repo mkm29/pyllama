@@ -16,7 +16,7 @@ class LlmConfig(BaseSettings):
     streaming: bool = Field(False, env="STREAMING")
     verbose: bool = Field(True, env="VERBOSE")
     topic_name: str = "general"
-    broker_port: int = Field(42883, env="BROKER_PORT")
+    broker_port: int = Field(19092, env="BROKER_PORT")
 
     class Config:
         env_prefix = ""

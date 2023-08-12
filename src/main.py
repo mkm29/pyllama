@@ -8,7 +8,7 @@ from utils import clean_strings
 from langchain.llms import LlamaCpp
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-REGEX = re.compile(r"\d+\.")
+REGEX = re.compile(r"\d+")
 
 config: LlmConfig = None
 # create buffer to hold new tokens
@@ -33,7 +33,7 @@ def new_token(token: str, topic: str, **kwargs) -> None:
     # add token to buffer
 
     # does token match REGEX
-    if REGEX.match(token):
+    if REGEX.match(token) and buffer[-1] in ('.', '!', '?', ':'):
         return
 
     buffer.append(token)
