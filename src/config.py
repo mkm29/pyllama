@@ -12,6 +12,7 @@ class LlmConfig(BaseSettings):
     top_p: float = Field(1.0, env='TOP_P')
     n_gpu_layers: int = Field(1, env='N_GPU_LAYERS')
     n_batch: int = Field(1, env='N_BATCH')
+    streaming: bool = Field(False, env='STREAMING')
     verbose: bool = Field(True, env='VERBOSE')
     topic_name: str = 'general'
 

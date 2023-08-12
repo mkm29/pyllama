@@ -20,5 +20,7 @@ def get_model(config: LlmConfig, handlers: List[Any]) -> LlamaCpp:
         n_gpu_layers=config.n_gpu_layers,
         n_batch=config.n_batch,
         callback_manager=CallbackManager(handlers),
+        streaming=config.streaming,
         verbose=config.verbose,
+        echo=False
     )
