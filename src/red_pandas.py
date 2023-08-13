@@ -44,10 +44,13 @@ class RedPandas:
     def consumer(self, consumer: KafkaConsumer) -> None:
         self._consumer = consumer
 
-    def __init__(self, config: LlmConfig, topic: Optional[str] = None) -> None:
+    def __init__(self, config: LlmConfig, topic: Optional[str] = None, auto_offset_reset: Optional[str] = None) -> None:
         self.bootstrap_servers = [
             f"{server}:{config.broker_port}" for server in config.bootstrap_servers
         ]
+        # assert that auto_offset_reset is earliest or latest
+        assert auto_offset_reset in [None, "earliest", "latest"]
+
 
         try:
             self.admin_client = KafkaAdminClient(
@@ -60,7 +63,7 @@ class RedPandas:
         except Exception as e:
             raise
         try:
-            self.consumer = KafkaConsumer(bootstrap_servers=self.bootstrap_servers)
+            self.consumer = KafkaConsumer(bootstrap_servers=self.bootstrap_servers, auto_offset_reset=auto_offset_reset)
         except Exception as e:
             raise
         if config.topic_name:
@@ -105,7 +108,7 @@ class RedPandas:
         # flush
         self.producer.flush()
 
-    def consume_messages(self, topic: str) -> str:
+    def consume_messages(self, topic: str, offset: int = None) -> str:
         """Consumes a message from a topic"""
 
         if self.consumer is None:

@@ -80,7 +80,7 @@ handler.on_llm_error = lambda error, **kwargs: print("on_llm_error")
 def init() -> Union[LlmConfig, RedPandas, LlamaCpp]:
     config = LlmConfig()
     config.topic_name = "kubernetes"
-    red_pandas = RedPandas(config)
+    red_pandas = RedPandas(config, auto_offset_reset="earliest")
 
     model = get_model(config, [handler])
     return config, red_pandas, model
