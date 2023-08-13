@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 import re
 
 from kafka import KafkaProducer, KafkaConsumer
@@ -82,32 +82,38 @@ class RedPandas:
             return f"Topic {topic_name} already exists"
 
 
-    def send_message(self, message: bytes, topic: str) -> None:
+    def send_message(self, message: bytes, topic: str) -> List[FutureRecordMetadata]:
         """Sends a message to a topic"""
 
         if self.producer is None:
             raise Exception("Producer not initialized")
         if message == b'':
             return
-        regex = re.compile(r'\d+\.')
-        if regex.match(message.decode("utf-8")):
-            return
-
-        # mb = bytes(message, "utf-8")
-        # if len(mb) < 2:
+        # regex = re.compile(r'\d+\.')
+        # if regex.match(message.decode("utf-8")):
         #     return
-        # if mb is empty
 
-        res: FutureRecordMetadata = self.producer.send(topic, value=message)
+        # if message contains a newline character it will base64 encode the message
+        if b"\n" in message:
+            # split into 2 messages
+            messages = message.split(b"\n")
+        else:
+            messages = [message]
+        results = []
+        for msg in messages:
+            results.append(self.producer.send(topic, value=msg))
         # flush
         self.producer.flush()
-        # print(f"Message sent to topic {topic}, message: {message}, result: {res}")
 
     def consume_messages(self, topic: str) -> str:
         """Consumes a message from a topic"""
 
         if self.consumer is None:
             raise Exception("Consumer not initialized")
+        print("Consuming messages")
         self.consumer.subscribe([topic])
+        value = []
         for message in self.consumer:
-            return message.value.decode("utf-8")
+            print(f"Consumed message: {message.value.decode('utf-8')}")
+            value.append(message.value.decode("utf-8"))
+        return "\n".join(value)

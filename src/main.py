@@ -63,6 +63,11 @@ def done(response, **kwargs):
         thread = threading.Thread(target=red_pandas.send_message, args=(msg, config.topic_name))
         thread.start()
 
+"""
+    The team has not been successful in winning the 
+    championship title for over 50 years now, which is quite surprising 
+    given their rich history and legacy in the NHL.
+"""
 
 handler.on_llm_start = llm_start
 handler.on_llm_end = done
@@ -74,7 +79,7 @@ handler.on_llm_error = lambda error, **kwargs: print("on_llm_error")
 
 def init() -> Union[LlmConfig, RedPandas, LlamaCpp]:
     config = LlmConfig()
-    config.topic_name = "llama7-2"
+    config.topic_name = "kubernetes"
     red_pandas = RedPandas(config)
 
     model = get_model(config, [handler])
@@ -87,6 +92,9 @@ if __name__ == "__main__":
     promts = [
         "What is the meaning of life?",
         "What is the best programming language?",
-        "When was the last time that the Toronto Maples Leafs won the Stanley Cup?"
+        "When was the last time that the Toronto Maples Leafs won the Stanley Cup?",
+        "What is Kubernetes?"
     ]
-    model(promts[1])
+    # model(promts[3])
+    msg = red_pandas.consume_messages(config.topic_name)
+    print(msg)
